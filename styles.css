@@ -47,6 +47,10 @@ body, html {
   font-size: 13px;
   color: #222;
   transition: background 0.25s ease, border-color 0.25s ease, color 0.25s ease;
+  white-space: nowrap;
+  max-width: max-content;
+  width: auto;
+  flex-shrink: 0;
 }
 
 .hud-title-wrapper {
