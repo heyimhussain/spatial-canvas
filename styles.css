@@ -447,17 +447,32 @@ kbd {
   background: rgba(255, 255, 255, 0.85);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
-  border: 1px solid rgba(0, 0, 0, 0.08);
+  border: none;
   color: #4b5563;
   border-radius: 50%;
+  
+  /* Centering Fixes */
   display: flex;
   align-items: center;
   justify-content: center;
+  padding: 0;           /* Resets default button padding */
+  margin: 0;
+  line-height: 0;       /* Removes extra font line-height spacing below baseline */
   font-size: 14px;
-  line-height: 1;
+  text-align: center;
+  
   cursor: pointer;
   opacity: 0;
   transition: opacity 0.15s ease, background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.tile-delete svg {
+  width: 12px;
+  height: 12px;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  display: block;
 }
 
 .tile:hover .tile-delete {
@@ -760,6 +775,16 @@ body.dark-mode .tile-delete {
   background: rgba(73, 73, 73, 0.9);
   border-color: rgba(255, 255, 255, 0.12);
   color: #e0e1e3;
+}
+
+body.dark-mode .tile:hover .tile-delete {
+  opacity: 1;
+}
+
+body.dark-mode .tile-delete:hover {
+  background: #ff3b30;
+  color: white;
+  border-color: transparent;
 }
 
 body.dark-mode #selection-box {
