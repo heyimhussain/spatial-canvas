@@ -1,2 +1,1 @@
-- remove border from tiles
--
+heyimhussain.github.io/spatial-canvas
