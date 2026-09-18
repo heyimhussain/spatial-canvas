@@ -830,3 +830,20 @@ body.dark-mode #selection-box {
 .visualizer-container.is-playing:hover .play-circle-btn {
   opacity: 1;
 }
+
+.canvas-footer {
+  position: fixed;
+  bottom: 12px;
+  right: 16px;
+  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace;
+  font-size: 11px;
+  color: rgba(150, 150, 150, 0.35); /* Subtle tone for dark backgrounds */
+  pointer-events: none; /* Prevents interference with dragging/clicking canvas tiles */
+  user-select: none;
+  z-index: 9999;
+}
+
+/* Optional adjustment if your default canvas background is light */
+body:not(.dark-mode) .canvas-footer {
+  color: rgba(56, 56, 56, 0.35);
+}
