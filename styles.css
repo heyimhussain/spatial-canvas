@@ -1,0 +1,832 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  user-select: none;
+}
+
+body, html {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  background-color: #f3f4f6;
+  color: #1a1a1a;
+  transition: background-color 0.25s ease, color 0.25s ease;
+}
+
+/* Updated Header & HUD Font to Outfit Medium */ 
+.hud-pill, 
+.rec-text, 
+.media-filename {
+  font-family: 'Outfit', sans-serif;
+  font-weight: 500;
+}
+
+/* --- Floating HUD (Glassmorphism) --- */
+#ui-layer {
+  position: fixed;
+  top: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10000;
+  pointer-events: none;
+}
+
+.hud-pill {
+  background: rgba(255, 255, 255, 0.45);
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.65);
+  padding: 8px 18px;
+  border-radius: 30px;
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  font-size: 13px;
+  color: #222;
+  transition: background 0.25s ease, border-color 0.25s ease, color 0.25s ease;
+}
+
+.hud-title-wrapper {
+  position: relative;
+  display: inline-block;
+  pointer-events: auto;
+}
+
+.hud-title {
+  font-family: 'Outfit', sans-serif;
+  font-weight: 800; /* Try 800 or 900 */
+  cursor: pointer;
+  user-select: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 6px;
+  margin: -2px -6px;
+  border-radius: 6px;
+  transition: background 0.15s ease, opacity 0.15s ease;
+}
+
+.hud-title:hover {
+  background: rgba(0, 0, 0, 0.06);
+}
+
+.hud-chevron {
+  font-size: 10px;
+  opacity: 0.5;
+  transition: transform 0.2s ease;
+}
+
+.hud-title.active .hud-chevron {
+  transform: rotate(180deg);
+}
+
+/* Glassmorphic Dropdown Container */
+.glass-menu {
+  position: absolute;
+  top: calc(100% + 12px);
+  left: 0;
+  min-width: 160px;
+  background: rgba(255, 255, 255, 0.45);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  box-shadow: 0 12px 32px 0 rgba(0, 0, 0, 0.08);
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  z-index: 10000;
+  pointer-events: auto;
+  transition: background 0.25s ease, border-color 0.25s ease;
+}
+
+.glass-menu.hidden {
+  display: none;
+}
+
+.menu-header {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: rgba(0, 0, 0, 0.4);
+  padding: 4px 8px;
+}
+
+.theme-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 6px 8px;
+  border: none;
+  background: transparent;
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 12px;
+  color: #222222;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.theme-option:hover {
+  background: rgba(255, 255, 255, 0.6);
+}
+
+.theme-option.active {
+  background: rgba(255, 255, 255, 0.85);
+  font-weight: 600;
+}
+
+.theme-toggle {
+  display: inline-block;
+  cursor: pointer;
+  user-select: none;
+}
+
+.theme-toggle input {
+  display: none;
+}
+
+.toggle-track {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 56px;
+  height: 28px;
+  background: #e4e4e7;
+  border-radius: 30px;
+  padding: 0 6px;
+  transition: background 0.3s ease;
+}
+
+.toggle-track .icon {
+  font-size: 13px;
+  z-index: 1;
+  line-height: 1;
+}
+
+.toggle-thumb {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 22px;
+  height: 22px;
+  background: #ffffff;
+  border-radius: 50%;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Checked / Dark Mode State */
+.theme-toggle input:checked + .toggle-track {
+  background: #27272a;
+}
+
+.theme-toggle input:checked + .toggle-track .toggle-thumb {
+  transform: translateX(28px);
+  background: #18181b;
+}
+
+/* --- Dark Mode Toggle Switch Additions --- */
+
+/* Wrapper row for the dark mode menu item */
+.theme-option.toggle-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: default;
+}
+
+.theme-option.toggle-row:hover {
+  background: transparent;
+}
+
+body.dark-mode .theme-option.toggle-row:hover {
+  background: transparent;
+}
+
+/* Toggle Switch Container */
+.toggle-switch {
+  position: relative;
+  display: flex;
+  width: 44px;
+  height: 24px;
+  cursor: pointer;
+  align-items: center;
+}
+
+.toggle-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+/* Slider Track */
+.toggle-slider {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.15);
+  border-radius: 30px;
+  transition: background-color 0.25s ease;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 5px;
+}
+
+.toggle-slider .icon {
+  font-size: 10px;
+  line-height: 1;
+  z-index: 1;
+  user-select: none;
+}
+
+/* Sliding Thumb Circle */
+.toggle-slider::before {
+  content: "";
+  position: absolute;
+  height: 18px;
+  width: 18px;
+  left: 3px;
+  bottom: 3px;
+  background-color: #ffffff;
+  border-radius: 50%;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.25s ease;
+  z-index: 2;
+}
+
+/* Checked State (Dark Mode Active) */
+.toggle-switch input:checked + .toggle-slider {
+  background-color: rgba(255, 255, 255, 0.25);
+}
+
+.toggle-switch input:checked + .toggle-slider::before {
+  transform: translateX(20px);
+  background-color: #111111;
+}
+
+/* Dark Mode Overrides for Toggle Track */
+body.dark-mode .toggle-slider {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+body.dark-mode .toggle-switch input:checked + .toggle-slider {
+  background-color: rgba(255, 255, 255, 0.35);
+}
+
+body.dark-mode .toggle-switch input:checked + .toggle-slider::before {
+  background-color: #ffffff;
+}
+
+.hud-shortcuts {
+  display: flex;
+  gap: 20px;
+  border-left: 1px solid rgba(0, 0, 0, 0.1);
+  padding-left: 12px;
+  color: #555;
+  transition: border-color 0.25s ease, color 0.25s ease;
+}
+
+/* Base light mode styles */
+kbd {
+  background: rgb(224, 224, 224);
+  border-radius: 3px;
+  padding: 1px 5px;
+  font-size: 11px;
+  font-family: monospace;
+  color: #000000;
+  transition: background 0.25s ease, color 0.25s ease;
+}
+
+/* Base dark mode key style */
+.dark-mode kbd {
+  background: #414142;
+  color: #ffffff;
+}
+
+/* Lighter background specifically for Space and Shift in dark mode */
+.dark-mode kbd.key-space,
+.dark-mode kbd.key-shift,
+.dark-mode kbd.mouse-wheel {
+  background: #636366; /* Adjust brightness as needed */
+  color: #ffffff;
+}
+
+/* --- Recording HUD Overlay (Dark Glassmorphism) --- */
+#recording-indicator {
+  position: fixed;
+  bottom: 30px;
+  left: 50%;
+  transform: translateX(-50%) translateY(100px);
+  opacity: 0;
+  background: rgb(17, 17, 17);
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #fff;
+  padding: 10px 20px;
+  border-radius: 30px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 13px;
+  font-weight: 500;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25);
+  z-index: 10000;
+  transition: transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.25s ease;
+  pointer-events: none;
+}
+
+#recording-indicator.active {
+  transform: translateX(-50%) translateY(0);
+  opacity: 1;
+}
+
+.pulse-dot {
+  width: 10px;
+  height: 10px;
+  background-color: #ff3b30;
+  border-radius: 50%;
+  animation: pulse 1s infinite alternate;
+}
+
+@keyframes pulse {
+  0% { transform: scale(0.8); opacity: 0.5; }
+  100% { transform: scale(1.2); opacity: 1; }
+}
+
+/* --- Viewport and Canvas Surface --- */
+#viewport {
+  width: 100vw;
+  height: 100vh;
+  position: relative;
+  overflow: hidden;
+  cursor: default;
+  background-color: #f3f4f6;
+  transition: background-color 0.25s ease;
+}
+
+#viewport.panning {
+  cursor: grab !important;
+}
+
+#viewport.panning:active {
+  cursor: grabbing !important;
+}
+
+#canvas-world {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  transform-origin: 0 0;
+  pointer-events: none;
+  overflow: visible !important;
+}
+
+#tiles-container {
+  pointer-events: auto;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 0;
+  height: 0;
+  overflow: visible !important;
+}
+
+/* --- Glassmorphism Tiles / Nodes --- */
+.tile {
+  position: absolute;
+  background: rgba(255, 255, 255, 0.55);
+  backdrop-filter: blur(12px) saturate(160%);
+  -webkit-backdrop-filter: blur(12px) saturate(160%);
+  border: none;
+  border-radius: 16px;
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.06);
+  padding: 14px;
+  width: max-content;
+  flex-shrink: 0;
+  box-sizing: border-box;
+  cursor: grab;
+  transition: box-shadow 0.2s ease, border-color 0.2s ease, transform 0.2s ease, background 0.2s ease, color 0.2s ease;
+  transform-origin: center center;
+}
+
+.tile:hover {
+  background: rgba(255, 255, 255, 0.7);
+  box-shadow: 0 12px 40px 0 rgba(31, 38, 135, 0.12);
+  border-color: rgba(255, 255, 255, 0.9);
+}
+
+.tile.dragging {
+  cursor: grabbing !important;
+  background: rgba(255, 255, 255, 0.8);
+  box-shadow: 0 20px 48px 0 rgba(31, 38, 135, 0.18);
+  border-color: #0066ff;
+}
+
+/* Delete Button */
+.tile-delete {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  width: 24px;
+  height: 24px;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  color: #4b5563;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.15s ease, background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.tile:hover .tile-delete {
+  opacity: 1;
+}
+
+.tile-delete:hover {
+  background: #ff3b30;
+  color: white;
+  border-color: transparent;
+}
+
+/* Text Tile Content */
+.tile-text-input {
+  width: 100%;
+  min-height: 40px;
+  border: none;
+  outline: none;
+  font-size: 15px;
+  line-height: 1.5;
+  color: #111111;
+  font-family: 'DM Sans', sans-serif !important;
+  resize: none;
+  overflow: hidden;
+  background: transparent;
+  pointer-events: none;
+  user-select: text;
+  transition: color 0.25s ease;
+}
+
+.tile-text-input.editing {
+  pointer-events: auto;
+  user-select: text;
+}
+
+.tile-text-input::placeholder {
+  color: #888;
+  font-family: 'DM Sans', sans-serif;
+}
+
+/* Glassy Lasso Selection Rectangle */
+#selection-box {
+  position: absolute;
+  display: none;
+  background: rgba(128, 128, 128, 0.12);
+  border: 1px solid rgba(94, 94, 94, 0.5);
+  border-radius: 6px;
+  pointer-events: none;
+  z-index: 9999;
+}
+
+/* Highlighted state for selected tiles */
+.tile.selected {
+  border-color: #0066ff !important;
+  box-shadow: 0 0 0 2px rgba(0, 102, 255, 0.3), 0 12px 40px 0 rgba(0, 0, 0, 0.12) !important;
+}
+
+/* Media Tile Styles */
+.tile-media-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  gap: 8px;
+}
+
+.tile-media-container img {
+  width: 100%;
+  max-width: 480px;
+  height: auto;
+  display: block;
+  border-radius: 8px;
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-drag: none;
+  flex-shrink: 0;
+}
+
+.tile-media-container video {
+  width: 100%;
+  max-width: 480px;
+  height: auto;
+  display: block;
+  border-radius: 8px;
+  pointer-events: auto;
+  user-select: none;
+  -webkit-user-drag: none;
+  flex-shrink: 0;
+}
+
+.tile-media-container audio {
+  width: 100%;
+  min-width: 260px;
+  height: 40px;
+  pointer-events: auto;
+}
+
+.media-filename {
+  font-size: 11px;
+  color: #666;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding: 0 2px;
+  transition: color 0.25s ease;
+}
+
+/* --- LIGHT MODE CANVAS PATTERNS --- */
+
+/* Default Dot Grid */
+#viewport.pattern-dots {
+  background-image: radial-gradient(#cbd5e1 1.2px, transparent 1.2px);
+  background-size: 24px 24px;
+}
+
+/* Line Grid */
+#viewport.pattern-lines {
+  background-image: 
+    linear-gradient(to right, rgba(0, 0, 0, 0.08) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(0, 0, 0, 0.08) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+/* Crosses Pattern */
+#viewport.pattern-crosses {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'%3E%3Cpath d='M 14 14 L 18 18 M 18 14 L 14 18' stroke='rgba(0,0,0,0.25)' stroke-width='1.2' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-size: 24px 24px;
+}
+
+/* Wave Pattern */
+#viewport.pattern-waves {
+  background-color: #ffffff;
+  background-image: none;
+  position: relative;
+  overflow: hidden;
+}
+
+#viewport.pattern-waves::before {
+  content: "";
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  z-index: 0;
+  pointer-events: none;
+  transform: rotate(-30deg);
+  transform-origin: center center;
+  background-image: 
+    linear-gradient(135deg, rgba(244, 245, 245, 0.82) 0%, rgba(236, 238, 239, 0.92) 50%, rgba(214, 214, 214, 0.98) 100%),
+    url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22400%22%20height%3D%22400%22%20viewBox%3D%220%200%20400%20400%22%3E%3Cg%20fill%3D%22none%22%20stroke-linecap%3D%22round%22%3E%3Cpath%20d%3D%22M%200%2050%20Q%20100%20-30%20200%2050%20T%20400%2050%22%20stroke%3D%22rgba(0%2C%200%2C%200%2C%200.20)%22%20stroke-width%3D%2222%22%2F%3E%3Cpath%20d%3D%22M%200%20110%20Q%20100%2030%20200%20110%20T%20400%20110%22%20stroke%3D%22rgba(0%2C%200%2C%200%2C%200.15)%22%20stroke-width%3D%2226%22%2F%3E%3Cpath%20d%3D%22M%200%20170%20Q%20100%2090%20200%20170%20T%20400%20170%22%20stroke%3D%22rgba(0%2C%200%2C%200%2C%200.22)%22%20stroke-width%3D%2220%22%2F%3E%3Cpath%20d%3D%22M%200%20230%20Q%20100%20150%20200%20230%20T%20400%20230%22%20stroke%3D%22rgba(0%2C%200%2C%200%2C%200.18)%22%20stroke-width%3D%2224%22%2F%3E%3Cpath%20d%3D%22M%200%20290%20Q%20100%20210%20200%20290%20T%20400%20290%22%20stroke%3D%22rgba(0%2C%200%2C%200%2C%200.20)%22%20stroke-width%3D%2220%22%2F%3E%3Cpath%20d%3D%22M%200%20350%20Q%20100%20270%20200%20350%20T%20400%20350%22%20stroke%3D%22rgba(0%2C%200%2C%200%2C%200.14)%22%20stroke-width%3D%2228%22%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E");
+  background-repeat: repeat;
+  background-size: cover, 400px 400px;
+
+  /* Restores continuous scrolling across the SVG tile size (400px) */
+  animation: waveScroll 20s linear infinite;
+}
+
+@keyframes waveScroll {
+  0% {
+    background-position: 0 0, 0 0;
+  }
+  100% {
+    background-position: 0 0, 400px 400px;
+  }
+}
+
+@keyframes waveShift {
+  0% { background-position: 0 0, 0 0; }
+  100% { background-position: 0 0, 400px 400px; }
+}
+
+/* Solid Plain */
+#viewport.pattern-plain {
+  background-image: none;
+  background-color: #f3f4f6;
+}
+
+/* ==========================================================================
+   --- DARK MODE OVERRIDES ---
+   ========================================================================== */
+
+body.dark-mode {
+  background-color: #0b0f17;
+  color: #f1f5f9;
+}
+
+/* Dark Mode Floating HUD */
+body.dark-mode .hud-pill {
+  background: rgba(40, 40, 40, 0.65);
+  border-color: rgba(255, 255, 255, 0.12);
+  color: #f8fafc;
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+}
+
+body.dark-mode .hud-title:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+body.dark-mode .glass-menu {
+  background: rgba(42, 42, 42, 0.75);
+  border-color: rgba(255, 255, 255, 0.12);
+  box-shadow: 0 12px 32px 0 rgba(0, 0, 0, 0.45);
+}
+
+body.dark-mode .menu-header {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+body.dark-mode .theme-option {
+  color: #f8fafc;
+}
+
+body.dark-mode .theme-option:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+body.dark-mode .theme-option.active {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+body.dark-mode .theme-preview {
+  border-color: rgba(255, 255, 255, 0.2);
+  background-color: #202020;
+}
+
+body.dark-mode .hud-shortcuts {
+  border-left-color: rgba(255, 255, 255, 0.12);
+  color: #c0c1c2;
+}
+
+body.dark-mode kbd {
+  background: #131313;
+  color: #f8fafc;
+}
+
+/* Dark Mode Viewport & Patterns */
+body.dark-mode #viewport {
+  background-color: #131313;
+}
+
+body.dark-mode #viewport.pattern-dots {
+  background-image: radial-gradient(rgba(255, 255, 255, 0.18) 1.2px, transparent 1.2px);
+}
+
+body.dark-mode #viewport.pattern-lines {
+  background-image: 
+    linear-gradient(to right, rgba(255, 255, 255, 0.07) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.07) 1px, transparent 1px);
+}
+
+body.dark-mode #viewport.pattern-crosses {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'%3E%3Cpath d='M 14 14 L 18 18 M 18 14 L 14 18' stroke='rgba(255,255,255,0.22)' stroke-width='1.2' stroke-linecap='round'/%3E%3C/svg%3E");
+}
+
+body.dark-mode #viewport.pattern-waves {
+  background-color: #131313;
+}
+
+body.dark-mode #viewport.pattern-waves::before {
+  background-image: 
+    linear-gradient(135deg, rgba(24, 24, 24, 0.82) 0%, rgba(0, 0, 0, 0.92) 50%, rgba(24, 24, 24, 0.98) 100%),
+    url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22400%22%20height%3D%22400%22%20viewBox%3D%220%200%20400%20400%22%3E%3Cg%20fill%3D%22none%22%20stroke-linecap%3D%22round%22%3E%3Cpath%20d%3D%22M%200%2050%20Q%20100%20-30%20200%2050%20T%20400%2050%22%20stroke%3D%22rgba(255%2C%20255%2C%20255%2C%200.12)%22%20stroke-width%3D%2222%22%2F%3E%3Cpath%20d%3D%22M%200%20110%20Q%20100%2030%20200%20110%20T%20400%20110%22%20stroke%3D%22rgba(255%2C%20255%2C%20255%2C%200.08)%22%20stroke-width%3D%2226%22%2F%3E%3Cpath%20d%3D%22M%200%20170%20Q%20100%2090%20200%20170%20T%20400%20170%22%20stroke%3D%22rgba(255%2C%20255%2C%20255%2C%200.15)%22%20stroke-width%3D%2220%22%2F%3E%3Cpath%20d%3D%22M%200%20230%20Q%20100%20150%20200%20230%20T%20400%20230%22%20stroke%3D%22rgba(255%2C%20255%2C%20255%2C%200.10)%22%20stroke-width%3D%2224%22%2F%3E%3Cpath%20d%3D%22M%200%20290%20Q%20100%20210%20200%20290%20T%20400%20290%22%20stroke%3D%22rgba(255%2C%20255%2C%20255%2C%200.12)%22%20stroke-width%3D%2220%22%2F%3E%3Cpath%20d%3D%22M%200%20350%20Q%20100%20270%20200%20350%20T%20400%20350%22%20stroke%3D%22rgba(255%2C%20255%2C%20255%2C%200.08)%22%20stroke-width%3D%2228%22%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E");
+}
+
+body.dark-mode #viewport.pattern-plain {
+  background-color: #131313;
+}
+
+/* Dark Mode Canvas Tiles */
+body.dark-mode .tile {
+  background: rgba(51, 52, 52, 0.6);
+  border-color: rgba(255, 255, 255, 0.12);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.35);
+}
+
+body.dark-mode .tile:hover {
+  background: rgba(55, 55, 55, 0.85);
+  border-color: rgba(255, 255, 255, 0.25);
+  box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.5);
+}
+
+body.dark-mode .tile.dragging {
+  background: rgba(56, 56, 56, 0.95);
+}
+
+body.dark-mode .tile-text-input {
+  color: #f8fafc;
+}
+
+body.dark-mode .tile-text-input::placeholder {
+  color: #919396;
+}
+
+body.dark-mode .media-filename {
+  color: #b9babc;
+}
+
+body.dark-mode .tile-delete {
+  background: rgba(73, 73, 73, 0.9);
+  border-color: rgba(255, 255, 255, 0.12);
+  color: #e0e1e3;
+}
+
+body.dark-mode #selection-box {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.voice-tile {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+}
+
+.visualizer-container {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  max-width: 240px;
+  height: 40px;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+/* Centered visualizer canvas */
+.visualizer-container canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* Base play button: visible by default */
+.play-circle-btn {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: none;
+  background: none;
+  color: #5a5a5ac0;
+  font-size: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 2;
+  padding-left: 2px;
+  
+  opacity: 1; /* Always visible when paused */
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.dark-mode .play-circle-btn {
+  color: #ccccccc0; /* White or high-contrast color for dark background */
+}
+
+/* ONLY hide the button when audio is actively playing */
+.visualizer-container.is-playing .play-circle-btn {
+  opacity: 0;
+}
+
+/* Reveal the pause button when hovering while audio is playing */
+.visualizer-container.is-playing:hover .play-circle-btn {
+  opacity: 1;
+}

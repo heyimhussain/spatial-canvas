@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Spatial Canvas</title>
+    <!-- Google Fonts: Outfit & DM Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Outfit:wght@500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <!-- Floating UI Overlay -->
+  <div id="ui-layer">
+    <div class="hud-pill">
+      <!-- Clickable Title & Dropdown Wrapper -->
+      <div class="hud-title-wrapper">
+        <span id="hud-title-btn" class="hud-title">
+            Spatial Canvas <span class="hud-chevron">▾</span>
+        </span>
+        
+        <!-- Glassmorphic Dropdown Menu -->
+        <div id="theme-dropdown" class="glass-menu hidden">
+            <button id="export-btn" class="theme-option action-btn" style="font-weight: bold;">Export Space (.json)</button>
+            <div class="menu-divider"></div>
+            <div class="menu-header">Appearance</div>
+            <div class="theme-option toggle-row">
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="dark-mode-toggle">
+                        <span class="toggle-slider">
+                            <span class="icon moon">🌙</span>
+                            <span class="icon sun">☀️</span>
+                    </label>
+                </div>
+            <div class="menu-header">Canvas Patterns</div>
+                <button class="theme-option active" data-pattern="dots">
+                    <span class="theme-preview preview-dots"></span> Dot Grid
+                </button>
+                <button class="theme-option" data-pattern="crosses">
+                    <span class="theme-preview preview-crosses"></span> Cross Grid
+                </button>
+                <button class="theme-option" data-pattern="lines">
+                    <span class="theme-preview preview-lines"></span> Line Grid
+                </button>
+                <button class="theme-option" data-pattern="plain">
+                    <span class="theme-preview preview-plain"></span> Plain
+                </button>
+                <button class="theme-option" data-pattern="waves">
+                    <span class="theme-preview preview-waves"></span> Waves
+                </button>
+            </div>
+        </div>
+
+      <div class="hud-shortcuts">
+        <span><kbd class="key-shift">Shift</kbd> + Drag to Pan</span>
+        <span><kbd class="mouse-wheel">Wheel</kbd> to Zoom</span>
+        <span>Double-Click to Text</span>
+        <span>Drag & Drop Media</span>
+        <span>Hold <kbd class="key-space">Space</kbd> to Record</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Voice Recording Overlay Indicator -->
+  <div id="recording-indicator">
+    <div class="pulse-dot"></div>
+    <div class="rec-text">Recording Audio... Release <kbd>Space</kbd> to drop</div>
+  </div>
+
+  <!-- Infinite Canvas World -->
+  <div id="viewport">
+    <div id="selection-box"></div>
+    <div id="canvas-world">
+      <div id="tiles-container"></div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
