@@ -374,7 +374,7 @@ kbd {
 #viewport {
   width: 100vw;
   height: 100vh;
-  position: relative;
+  position: fixed;
   overflow: hidden;
   cursor: default;
   background-color: #f3f4f6;
@@ -420,12 +420,17 @@ kbd {
   border-radius: 16px;
   box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.06);
   padding: 14px;
-  width: max-content;
+  width: auto;
+  height: auto;
+  display: flex;             
+  flex-direction: column;    
+  align-items: flex-start;   
+  justify-content: flex-start;
   flex-shrink: 0;
   box-sizing: border-box;
   cursor: grab;
-  transition: box-shadow 0.2s ease, border-color 0.2s ease, transform 0.2s ease, background 0.2s ease, color 0.2s ease;
-  transform-origin: center center;
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+  transform-origin: top left;
 }
 
 .tile:hover {
@@ -468,6 +473,7 @@ kbd {
   cursor: pointer;
   opacity: 0;
   transition: opacity 0.15s ease, background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+  z-index: 20;
 }
 
 .tile-delete svg {
@@ -489,9 +495,28 @@ kbd {
   border-color: transparent;
 }
 
+/* Invisible 10px interaction strip on the right border */
+.tile-resize-handle {
+  position: absolute;
+  top: 0;
+  right: -5px; /* Centers the handle directly over the right edge */
+  width: 10px;
+  height: 100%;
+  cursor: ew-resize; /* Displays horizontal resize cursor */
+  z-index: 10;
+  user-select: none;
+}
+
+/* Visual blue highlight when hovering the edge */
+.tile-resize-handle:hover {
+  background: none;
+  border-radius: 2px;
+}
+
 /* Text Tile Content */
 .tile-text-input {
   width: 100%;
+  box-sizing: border-box;
   min-height: 40px;
   border: none;
   outline: none;
@@ -499,13 +524,15 @@ kbd {
   line-height: 1.5;
   color: #111111;
   font-family: 'DM Sans', sans-serif !important;
-  resize: none;
+  resize: none !important;
+  min-width: 100%;
   overflow: hidden;
   background: transparent;
   pointer-events: none;
   user-select: text;
   transition: color 0.25s ease;
-}
+  display: block;
+  margin: 0;                   /* Prevents unintended margin pushing */}
 
 .tile-text-input.editing {
   pointer-events: auto;
@@ -540,31 +567,27 @@ kbd {
   flex-direction: column;
   align-items: center;
   width: 100%;
+  height: 100%;
   gap: 8px;
 }
 
-.tile-media-container img {
-  width: 100%;
-  max-width: 480px;
-  height: auto;
+.tile-media-container img,
+.tile-media-container video {
   display: block;
+  max-width: 100%;               
+  width: 100%;
+  height: auto;
+  object-fit: contain;          
   border-radius: 8px;
   pointer-events: none;
   user-select: none;
   -webkit-user-drag: none;
   flex-shrink: 0;
+  image-rendering: pixelated; /* Ensures small images (e.g. 8x8) retain crisp pixels if scaled */
 }
 
-.tile-media-container video {
-  width: 100%;
-  max-width: 480px;
-  height: auto;
-  display: block;
-  border-radius: 8px;
+.tile-media-container video.interactive {
   pointer-events: auto;
-  user-select: none;
-  -webkit-user-drag: none;
-  flex-shrink: 0;
 }
 
 .tile-media-container audio {
@@ -582,6 +605,8 @@ kbd {
   text-overflow: ellipsis;
   padding: 0 2px;
   transition: color 0.25s ease;
+  width: 100%;
+  text-align: center;
 }
 
 /* --- LIGHT MODE CANVAS PATTERNS --- */
@@ -616,11 +641,11 @@ kbd {
 
 #viewport.pattern-waves::before {
   content: "";
-  position: absolute;
-  top: -50%;
-  left: -50%;
-  width: 200%;
-  height: 200%;
+  position: fixed; /* Pinned to viewport so vertical expansion won't pull it */
+  top: -50vh;
+  left: -50vw;
+  width: 200vw;
+  height: 200vh;
   z-index: 0;
   pointer-events: none;
   transform: rotate(-30deg);
@@ -630,8 +655,6 @@ kbd {
     url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22400%22%20height%3D%22400%22%20viewBox%3D%220%200%20400%20400%22%3E%3Cg%20fill%3D%22none%22%20stroke-linecap%3D%22round%22%3E%3Cpath%20d%3D%22M%200%2050%20Q%20100%20-30%20200%2050%20T%20400%2050%22%20stroke%3D%22rgba(0%2C%200%2C%200%2C%200.20)%22%20stroke-width%3D%2222%22%2F%3E%3Cpath%20d%3D%22M%200%20110%20Q%20100%2030%20200%20110%20T%20400%20110%22%20stroke%3D%22rgba(0%2C%200%2C%200%2C%200.15)%22%20stroke-width%3D%2226%22%2F%3E%3Cpath%20d%3D%22M%200%20170%20Q%20100%2090%20200%20170%20T%20400%20170%22%20stroke%3D%22rgba(0%2C%200%2C%200%2C%200.22)%22%20stroke-width%3D%2220%22%2F%3E%3Cpath%20d%3D%22M%200%20230%20Q%20100%20150%20200%20230%20T%20400%20230%22%20stroke%3D%22rgba(0%2C%200%2C%200%2C%200.18)%22%20stroke-width%3D%2224%22%2F%3E%3Cpath%20d%3D%22M%200%20290%20Q%20100%20210%20200%20290%20T%20400%20290%22%20stroke%3D%22rgba(0%2C%200%2C%200%2C%200.20)%22%20stroke-width%3D%2220%22%2F%3E%3Cpath%20d%3D%22M%200%20350%20Q%20100%20270%20200%20350%20T%20400%20350%22%20stroke%3D%22rgba(0%2C%200%2C%200%2C%200.14)%22%20stroke-width%3D%2228%22%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E");
   background-repeat: repeat;
   background-size: cover, 400px 400px;
-
-  /* Restores continuous scrolling across the SVG tile size (400px) */
   animation: waveScroll 20s linear infinite;
 }
 
@@ -737,9 +760,22 @@ body.dark-mode #viewport.pattern-waves {
 }
 
 body.dark-mode #viewport.pattern-waves::before {
+  content: "";
+  position: fixed;
+  top: -50vh;
+  left: -50vw;
+  width: 200vw;
+  height: 200vh;
+  z-index: 0;
+  pointer-events: none;
+  transform: rotate(-30deg);
+  transform-origin: center center;
   background-image: 
-    linear-gradient(135deg, rgba(24, 24, 24, 0.82) 0%, rgba(0, 0, 0, 0.92) 50%, rgba(24, 24, 24, 0.98) 100%),
+    linear-gradient(135deg, rgba(24, 24, 24, 0.82) 0%, rgba(8, 8, 8, 0.92) 50%, rgba(24, 24, 24, 0.98) 100%),
     url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22400%22%20height%3D%22400%22%20viewBox%3D%220%200%20400%20400%22%3E%3Cg%20fill%3D%22none%22%20stroke-linecap%3D%22round%22%3E%3Cpath%20d%3D%22M%200%2050%20Q%20100%20-30%20200%2050%20T%20400%2050%22%20stroke%3D%22rgba(255%2C%20255%2C%20255%2C%200.12)%22%20stroke-width%3D%2222%22%2F%3E%3Cpath%20d%3D%22M%200%20110%20Q%20100%2030%20200%20110%20T%20400%20110%22%20stroke%3D%22rgba(255%2C%20255%2C%20255%2C%200.08)%22%20stroke-width%3D%2226%22%2F%3E%3Cpath%20d%3D%22M%200%20170%20Q%20100%2090%20200%20170%20T%20400%20170%22%20stroke%3D%22rgba(255%2C%20255%2C%20255%2C%200.15)%22%20stroke-width%3D%2220%22%2F%3E%3Cpath%20d%3D%22M%200%20230%20Q%20100%20150%20200%20230%20T%20400%20230%22%20stroke%3D%22rgba(255%2C%20255%2C%20255%2C%200.10)%22%20stroke-width%3D%2224%22%2F%3E%3Cpath%20d%3D%22M%200%20290%20Q%20100%20210%20200%20290%20T%20400%20290%22%20stroke%3D%22rgba(255%2C%20255%2C%20255%2C%200.12)%22%20stroke-width%3D%2220%22%2F%3E%3Cpath%20d%3D%22M%200%20350%20Q%20100%20270%20200%20350%20T%20400%20350%22%20stroke%3D%22rgba(255%2C%20255%2C%20255%2C%200.08)%22%20stroke-width%3D%2228%22%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E");
+  background-repeat: repeat;
+  background-size: cover, 400px 400px;
+  animation: waveScroll 20s linear infinite;
 }
 
 body.dark-mode #viewport.pattern-plain {
@@ -809,7 +845,6 @@ body.dark-mode #selection-box {
   justify-content: center;
   align-items: center;
   width: 100%;
-  max-width: 240px;
   height: 40px;
   border-radius: 12px;
   overflow: hidden;
@@ -875,4 +910,57 @@ body.dark-mode #selection-box {
 /* Optional adjustment if your default canvas background is light */
 body:not(.dark-mode) .canvas-footer {
   color: rgba(56, 56, 56, 0.35);
+}
+
+/* Hidden by default on desktop */
+#desktop-only-warning {
+  display: none;
+}
+
+/* Mobile & Touch Screen Guard */
+@media (max-width: 860px), (pointer: coarse) {
+  #desktop-only-warning {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: #121212; /* Neutral dark grey background */
+    color: #f4f4f5;
+    z-index: 999999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    text-align: center;
+  }
+
+  .warning-card {
+    background: rgba(255, 255, 255, 0.03); /* Subtle glass accent */
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.08); /* Muted grey border */
+    padding: 32px 24px;
+    border-radius: 20px;
+    max-width: 360px;
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4);
+  }
+
+  .warning-card h2 {
+    font-family: 'Outfit', sans-serif;
+    font-size: 20px;
+    margin-bottom: 12px;
+    color: #f4f4f5;
+  }
+
+  .warning-card p {
+    font-size: 14px;
+    line-height: 1.5;
+    color: #a1a1aa; /* Neutral mid-grey text */
+  }
+
+  /* Prevent canvas rendering behind the modal on mobile */
+  #ui-layer, #viewport, .canvas-footer {
+    display: none !important;
+  }
 }

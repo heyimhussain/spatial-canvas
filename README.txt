@@ -1,3 +1,12 @@
 heyimhussain.github.io/spatial-canvas
 
 Spatial Canvas is a lightweight, interactive web application that lets you organize multimedia content freely on an infinite-feeling layout. It acts as an open-ended digital workspace where you can drop text notes, images, videos, audio recordings, and documents into moveable, layered tiles.
+
+THINGS TO ADD:
+X Horizontally Resizable Text Tiles
+- Resizable Photos and Videos
+-- fix Image not resizing
+-- change horizontal arrows to diagonal arrows
+-- move file name in the bottom middle 
+- Recording Toggle for Long VoiceNotes
+X Disable Mobile Website

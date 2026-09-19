@@ -75,7 +75,7 @@ function createCustomAudioPlayer(parentContainer, audioSrc) {
   playBtn.textContent = '▶';
 
   const canvas = document.createElement('canvas');
-  canvas.width = 220;
+  canvas.className = 'audio-viz-canvas';
   canvas.height = 40;
   const ctx = canvas.getContext('2d');
 
@@ -100,6 +100,15 @@ function createCustomAudioPlayer(parentContainer, audioSrc) {
     dataArray = new Uint8Array(analyser.frequencyBinCount);
     isInitialized = true;
   }
+
+  function updateCanvasWidth() {
+    const rect = canvas.getBoundingClientRect();
+    if (rect.width > 0) {
+      canvas.width = rect.width;
+    }
+  }
+
+  requestAnimationFrame(updateCanvasWidth);
 
   function drawSineWave(color, amp, freq, ph) {
     ctx.beginPath();
@@ -203,9 +212,19 @@ patternOptions.forEach(option => {
 
 function updateTransform() {
   world.style.transform = `translate(${panX}px, ${panY}px) scale(${scale})`;
+
   if (currentPattern === 'waves') {
+    const waveBaseSize = 100; 
+    const scaledWaveSize = waveBaseSize * scale;
+
+    const waveOffsetX = panX % scaledWaveSize;
+    const waveOffsetY = panY % scaledWaveSize;
+
+    viewport.style.backgroundPosition = `${waveOffsetX}px ${waveOffsetY}px`;
+    viewport.style.backgroundSize = `${scaledWaveSize}px ${scaledWaveSize}px`;
     return;
   }
+
   viewport.style.backgroundPosition = `${panX}px ${panY}px`;
   viewport.style.backgroundSize = `${24 * scale}px ${24 * scale}px`;
 }
@@ -387,6 +406,7 @@ function saveSpace() {
         x,
         y,
         zIndex,
+        width: parseFloat(tileEl.style.width) || null,
         text: textarea.value
       });
       return;
@@ -406,6 +426,7 @@ function saveSpace() {
         x,
         y,
         zIndex,
+        width: parseFloat(tileEl.dataset.width) || parseFloat(tileEl.style.width) || tileEl.offsetWidth,
         src: img.src,
         fileName
       });
@@ -416,11 +437,11 @@ function saveSpace() {
         x,
         y,
         zIndex,
+        width: parseFloat(tileEl.dataset.width) || parseFloat(tileEl.style.width) || tileEl.offsetWidth,
         src: video.src,
         fileName
       });
     } else if (audio) {
-      // Prioritize explicit data attribute if set by custom player, fallback to audio.src
       const audioSrc = audio.getAttribute('data-persistent-src') || audio.src;
       if (audioSrc) {
         tilesData.push({
@@ -429,6 +450,7 @@ function saveSpace() {
           x,
           y,
           zIndex,
+          width: parseFloat(tileEl.dataset.width) || parseFloat(tileEl.style.width) || tileEl.offsetWidth,
           src: audioSrc,
           fileName
         });
@@ -501,6 +523,10 @@ function loadSpace() {
 
         // Reconstruct Text Tile
         if (tileData.type === 'text') {
+          if (tileData.width) {
+            tile.style.width = `${tileData.width}px`;
+          }
+
           const textarea = document.createElement('textarea');
           textarea.className = 'tile-text-input';
           textarea.value = tileData.text || '';
@@ -517,14 +543,21 @@ function loadSpace() {
           });
 
           tile.appendChild(textarea);
+          attachTileResizeHandle(tile);
+
           requestAnimationFrame(() => {
             textarea.style.height = 'auto';
             textarea.style.height = `${textarea.scrollHeight}px`;
           });
-        } 
+        }
         
         // Reconstruct Media Tiles
         else if (['image', 'video', 'audio'].includes(tileData.type)) {
+          if (tileData.width) {
+            tile.style.width = `${tileData.width}px`;
+            tile.dataset.width = tileData.width;
+          }
+
           const container = document.createElement('div');
           container.className = 'tile-media-container';
 
@@ -550,6 +583,7 @@ function loadSpace() {
           }
 
           tile.appendChild(container);
+          attachTileResizeHandle(tile);
         }
       });
     }
@@ -579,10 +613,9 @@ function createTileElement(canvasX, canvasY, tileType = 'foreground') {
   // Delete Button
   const deleteBtn = document.createElement('div');
   deleteBtn.className = 'tile-delete';
-  // Replace innerHTML = "×" or innerText = "×" with this:
-deleteBtn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <path d="M18 6L6 18M6 6l12 12"/>
-</svg>`;
+  deleteBtn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M18 6L6 18M6 6l12 12"/>
+  </svg>`;
   deleteBtn.addEventListener('click', (e) => {
     e.stopPropagation();
     tile.remove();
@@ -594,8 +627,7 @@ deleteBtn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3
   // Dragging Anywhere on the Tile
   tile.addEventListener('mousedown', (e) => {
     if (isShiftPressed || e.button === 1) return;
-    if (e.target === deleteBtn || e.target.tagName === 'AUDIO' || e.target.tagName === 'VIDEO') return;
-
+    if (e.target === deleteBtn || e.target.classList.contains('tile-resize-handle') || e.target.classList.contains('interactive') || e.target.tagName === 'AUDIO' || e.target.tagName === 'VIDEO') return;
     const textarea = tile.querySelector('.tile-text-input');
     if (textarea && textarea.classList.contains('editing')) return;
 
@@ -646,6 +678,20 @@ deleteBtn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3
       textarea.classList.add('editing');
       textarea.focus();
     }
+    e.stopPropagation(); // Prevents creating a text tile when double-clicking a media tile
+    const video = tile.querySelector('video');
+    if (video) {
+      e.stopPropagation(); // Prevents text creation or canvas double-click triggers
+      video.classList.add('interactive');
+      video.focus();
+    }
+    window.addEventListener('mousedown', (e) => {
+      document.querySelectorAll('video.interactive').forEach(video => {
+        if (!video.contains(e.target)) {
+          video.classList.remove('interactive');
+        }
+      });
+    });
   });
 
   tilesContainer.appendChild(tile);
@@ -659,6 +705,8 @@ viewport.addEventListener('dblclick', (e) => {
 
   const pos = screenToCanvas(e.clientX, e.clientY);
   const tile = createTileElement(pos.x, pos.y, 'foreground');
+
+  tile.style.width = '200px';
 
   const textarea = document.createElement('textarea');
   textarea.className = 'tile-text-input editing';
@@ -676,6 +724,7 @@ viewport.addEventListener('dblclick', (e) => {
   });
 
   tile.appendChild(textarea);
+  attachTileResizeHandle(tile);
   setTimeout(() => textarea.focus(), 50);
 });
 
@@ -703,28 +752,42 @@ viewport.addEventListener('drop', (e) => {
 function handleFileDrop(file, pos) {
   const isVisualMedia = file.type.startsWith('image/') || file.type.startsWith('video/');
   const isAudioMedia = file.type.startsWith('audio/');
-  // Keep media elements categorized properly for tile rendering/saving
   const tileType = (isVisualMedia || isAudioMedia) ? 'media' : 'foreground';
 
   const reader = new FileReader();
+
   reader.onload = (e) => {
-    const fileURL = e.target.result; // Persistent Base64 Data URL
+    const fileURL = e.target.result;
     const tile = createTileElement(pos.x, pos.y, tileType);
     const container = document.createElement('div');
     container.className = 'tile-media-container';
 
     if (file.type.startsWith('image/')) {
       const img = document.createElement('img');
-      img.src = fileURL;
       img.addEventListener('dragstart', (ev) => ev.preventDefault());
+
+      img.onload = () => {
+        const width = img.naturalWidth;
+        tile.style.width = `${width + 28}px`;
+        saveSpace();
+      };
+
+      img.src = fileURL;
       container.appendChild(img);
     } else if (file.type.startsWith('video/')) {
       const video = document.createElement('video');
-      video.src = fileURL;
       video.controls = true;
+
+      video.onloadedmetadata = () => {
+        const width = video.videoWidth;
+        tile.style.width = `${width + 28}px`;
+        saveSpace();
+      };
+
+      video.src = fileURL;
       container.appendChild(video);
     } else if (file.type.startsWith('audio/')) {
-      // Ensure player creates an underlying <audio src="..."> element for saveSpace() to query
+      tile.style.width = '240px';
       createCustomAudioPlayer(container, fileURL);
     } else {
       const label = document.createElement('div');
@@ -740,8 +803,8 @@ function handleFileDrop(file, pos) {
     container.appendChild(nameTag);
 
     tile.appendChild(container);
+    attachTileResizeHandle(tile);
 
-    // Save space after tile is fully appended to the DOM tree
     saveSpace();
   };
 
@@ -784,6 +847,7 @@ async function startAudioRecording() {
 
       const pos = screenToCanvas(mouseX, mouseY);
       const tile = createTileElement(pos.x, pos.y, 'foreground');
+      tile.style.width = '240px';
 
       const container = document.createElement('div');
       container.className = 'tile-media-container';
@@ -796,6 +860,7 @@ async function startAudioRecording() {
 
       container.appendChild(label);
       tile.appendChild(container);
+      attachTileResizeHandle(tile);
       saveSpace();
     };
 
@@ -832,7 +897,7 @@ if (exportBtn) {
 
     const a = document.createElement('a');
     a.href = url;
-a.download = `SpatialCanvas-${new Date().toISOString().replace(/:/g, '-').slice(0, 19)}.json`;
+    a.download = `SpatialCanvas-${new Date().toISOString().replace(/:/g, '-').slice(0, 19)}.json`;
     document.body.appendChild(a);
     a.click();
 
@@ -869,3 +934,41 @@ window.addEventListener('DOMContentLoaded', () => {
   loadSpace();
   saveSpace();
 });
+
+function attachTileResizeHandle(tile) {
+  const handle = document.createElement('div');
+  handle.className = 'tile-resize-handle';
+  tile.appendChild(handle);
+
+  handle.addEventListener('mousedown', (e) => {
+    e.stopPropagation();
+    e.preventDefault();
+
+    let startX = e.clientX;
+    let startWidth = tile.offsetWidth;
+
+    const canvas = tile.querySelector('canvas');
+
+    const onMouseMove = (moveEvent) => {
+      const dx = (moveEvent.clientX - startX) / scale;
+      const newWidth = Math.max(180, startWidth + dx);
+
+      tile.style.width = `${newWidth}px`;
+      tile.style.height = 'auto';
+      tile.dataset.width = newWidth;
+
+      if (canvas) {
+        canvas.width = canvas.getBoundingClientRect().width;
+      }
+    };
+
+    const onMouseUp = () => {
+      window.removeEventListener('mousemove', onMouseMove);
+      window.removeEventListener('mouseup', onMouseUp);
+      saveSpace();
+    };
+
+    window.addEventListener('mousemove', onMouseMove);
+    window.addEventListener('mouseup', onMouseUp);
+  });
+}
