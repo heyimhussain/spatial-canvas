@@ -767,7 +767,7 @@ function handleFileDrop(file, pos) {
       img.addEventListener('dragstart', (ev) => ev.preventDefault());
 
       img.onload = () => {
-        const width = img.naturalWidth;
+        const width = Math.min(320, img.naturalWidth * 0.5);
         tile.style.width = `${width + 28}px`;
         saveSpace();
       };
@@ -779,7 +779,7 @@ function handleFileDrop(file, pos) {
       video.controls = true;
 
       video.onloadedmetadata = () => {
-        const width = video.videoWidth;
+        const width = Math.min(360, video.videoWidth * 0.5);
         tile.style.width = `${width + 28}px`;
         saveSpace();
       };

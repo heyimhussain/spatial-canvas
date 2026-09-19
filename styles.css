@@ -89,9 +89,9 @@ body, html {
 
 /* Glassmorphic Dropdown Container */
 .glass-menu {
-  position: absolute;
+  position: fixed;
   top: calc(100% + 12px);
-  left: 0;
+  left: -12px;
   min-width: 160px;
   background: rgba(255, 255, 255, 0.45);
   backdrop-filter: blur(20px) saturate(180%);
@@ -104,12 +104,22 @@ body, html {
   flex-direction: column;
   gap: 3px;
   z-index: 10000;
+
+  /* Visible State Defaults */
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
   pointer-events: auto;
-  transition: background 0.25s ease, border-color 0.25s ease;
+  
+  /* Smooth transition for fade & slight slide down */
+  transition: opacity 0.2s ease, visibility 0.2s ease, transform 0.2s ease, background 0.25s ease, border-color 0.25s ease;
 }
 
 .glass-menu.hidden {
-  display: none;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-8px);
+  pointer-events: none;
 }
 
 .menu-header {
@@ -567,7 +577,7 @@ kbd {
   flex-direction: column;
   align-items: center;
   width: 100%;
-  height: 100%;
+  height: auto;
   gap: 8px;
 }
 
