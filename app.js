@@ -122,8 +122,8 @@ function createCustomAudioPlayer(parentContainer, audioSrc) {
     const centerY = height / 2;
 
     for (let x = 0; x < width; x += 0.2) {
-      let scaling = Math.sin((x / width) * Math.PI);
-      let y = centerY + Math.sin((x * freq * 0.05) + ph) * amp * scaling;
+      const scaling = Math.sin((x / width) * Math.PI);
+      const y = centerY + Math.sin((x * freq * 0.05) + ph) * amp * scaling;
       if (x === 0) ctx.moveTo(x, y);
       else ctx.lineTo(x, y);
     }
@@ -136,8 +136,8 @@ function createCustomAudioPlayer(parentContainer, audioSrc) {
 
     let sum = 0;
     for (let i = 0; i < dataArray.length; i++) sum += dataArray[i];
-    let average = sum / dataArray.length;
-    let amplitude = (average / 255) * 15;
+    const average = sum / dataArray.length;
+    const amplitude = (average / 255) * 15;
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     phase += 0.1;
@@ -214,7 +214,7 @@ function updateTransform() {
   world.style.transform = `translate(${panX}px, ${panY}px) scale(${scale})`;
 
   if (currentPattern === 'waves') {
-    const waveBaseSize = 100; 
+    const waveBaseSize = 100;
     const scaledWaveSize = waveBaseSize * scale;
 
     const waveOffsetX = panX % scaledWaveSize;
@@ -300,9 +300,9 @@ function clearSelection() {
 }
 
 function isIntersecting(r1, r2) {
-  return !(r2.left > r1.right || 
-           r2.right < r1.left || 
-           r2.top > r1.bottom || 
+  return !(r2.left > r1.right ||
+           r2.right < r1.left ||
+           r2.top > r1.bottom ||
            r2.bottom < r1.top);
 }
 
@@ -397,7 +397,7 @@ function saveSpace() {
     const y = parseFloat(tileEl.style.top) || 0;
     const zIndex = parseInt(tileEl.style.zIndex, 10) || 1;
 
-    // In saveSpace():
+    // 1. Text Tile Check
     const textarea = tileEl.querySelector('textarea');
     if (textarea) {
       tilesData.push({
@@ -523,7 +523,6 @@ function loadSpace() {
         }
 
         // Reconstruct Text Tile
-        // In loadSpace(), under text tile reconstruction:
         if (tileData.type === 'text') {
           if (tileData.width) tile.style.width = `${tileData.width}px`;
           if (tileData.height) tile.style.height = `${tileData.height}px`;
@@ -544,7 +543,7 @@ function loadSpace() {
           tile.appendChild(textarea);
           attachTileResizeHandle(tile, 'text');
         }
-        
+
         // Reconstruct Media Tiles
         else if (['image', 'video', 'audio'].includes(tileData.type)) {
           if (tileData.width) {
@@ -666,31 +665,34 @@ function createTileElement(canvasX, canvasY, tileType = 'foreground') {
   });
 
   tile.addEventListener('dblclick', (e) => {
+    // Prevents the canvas dblclick handler from also spawning a text tile
+    e.stopPropagation();
+
     const textarea = tile.querySelector('.tile-text-input');
     if (textarea) {
-      e.stopPropagation();
       textarea.classList.add('editing');
       textarea.focus();
     }
-    e.stopPropagation(); // Prevents creating a text tile when double-clicking a media tile
+
     const video = tile.querySelector('video');
     if (video) {
-      e.stopPropagation(); // Prevents text creation or canvas double-click triggers
       video.classList.add('interactive');
       video.focus();
     }
-    window.addEventListener('mousedown', (e) => {
-      document.querySelectorAll('video.interactive').forEach(video => {
-        if (!video.contains(e.target)) {
-          video.classList.remove('interactive');
-        }
-      });
-    });
   });
 
   tilesContainer.appendChild(tile);
   return tile;
 }
+
+// Release video controls once the user clicks away
+window.addEventListener('mousedown', (e) => {
+  document.querySelectorAll('video.interactive').forEach(video => {
+    if (!video.contains(e.target)) {
+      video.classList.remove('interactive');
+    }
+  });
+});
 
 // --- Text Tile Generation ---
 
@@ -797,9 +799,9 @@ function handleFileDrop(file, pos) {
     container.appendChild(nameTag);
 
     tile.appendChild(container);
-    const type =  file.type.startsWith('image/') ? 'image' : 
-                  file.type.startsWith('video/') ? 'video' : 
-                  file.type.startsWith('audio/') ? 'audio' : 'text';
+    const type = file.type.startsWith('image/') ? 'image' :
+                 file.type.startsWith('video/') ? 'video' :
+                 file.type.startsWith('audio/') ? 'audio' : 'text';
     attachTileResizeHandle(tile, type);
 
     saveSpace();
@@ -925,12 +927,7 @@ function importSpaceFromFile(file) {
   reader.readAsText(file);
 }
 
-// Restore saved space and microphone access on load
-window.addEventListener('DOMContentLoaded', () => {
-  initMicrophone();
-  loadSpace();
-  saveSpace();
-});s
+// --- Tile Resize Handles ---
 
 function attachTileResizeHandle(tile, type) {
   // -------------------------------------------------------------
@@ -1057,3 +1054,12 @@ function attachTileResizeHandle(tile, type) {
     });
   }
 }
+
+// --- Boot ---
+
+// Restore saved space and microphone access on load
+window.addEventListener('DOMContentLoaded', () => {
+  initMicrophone();
+  loadSpace();
+  saveSpace();
+});

@@ -15,9 +15,9 @@ body, html {
   transition: background-color 0.25s ease, color 0.25s ease;
 }
 
-/* Updated Header & HUD Font to Outfit Medium */ 
-.hud-pill, 
-.rec-text, 
+/* Updated Header & HUD Font to Outfit Medium */
+.hud-pill,
+.rec-text,
 .media-filename {
   font-family: 'Outfit', sans-serif;
   font-weight: 500;
@@ -61,7 +61,7 @@ body, html {
 
 .hud-title {
   font-family: 'Outfit', sans-serif;
-  font-weight: 800; /* Try 800 or 900 */
+  font-weight: 800;
   cursor: pointer;
   user-select: none;
   display: inline-flex;
@@ -110,7 +110,7 @@ body, html {
   visibility: visible;
   transform: translateY(0);
   pointer-events: auto;
-  
+
   /* Smooth transition for fade & slight slide down */
   transition: opacity 0.2s ease, visibility 0.2s ease, transform 0.2s ease, background 0.25s ease, border-color 0.25s ease;
 }
@@ -148,6 +148,10 @@ body, html {
   transition: background 0.15s ease, color 0.15s ease;
 }
 
+.theme-option.action-btn {
+  font-weight: bold;
+}
+
 .theme-option:hover {
   background: rgba(255, 255, 255, 0.6);
 }
@@ -155,57 +159,6 @@ body, html {
 .theme-option.active {
   background: rgba(255, 255, 255, 0.85);
   font-weight: 600;
-}
-
-.theme-toggle {
-  display: inline-block;
-  cursor: pointer;
-  user-select: none;
-}
-
-.theme-toggle input {
-  display: none;
-}
-
-.toggle-track {
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  width: 56px;
-  height: 28px;
-  background: #e4e4e7;
-  border-radius: 30px;
-  padding: 0 6px;
-  transition: background 0.3s ease;
-}
-
-.toggle-track .icon {
-  font-size: 13px;
-  z-index: 1;
-  line-height: 1;
-}
-
-.toggle-thumb {
-  position: absolute;
-  top: 3px;
-  left: 3px;
-  width: 22px;
-  height: 22px;
-  background: #ffffff;
-  border-radius: 50%;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-/* Checked / Dark Mode State */
-.theme-toggle input:checked + .toggle-track {
-  background: #27272a;
-}
-
-.theme-toggle input:checked + .toggle-track .toggle-thumb {
-  transform: translateX(28px);
-  background: #18181b;
 }
 
 /* --- Dark Mode Toggle Switch Additions --- */
@@ -432,9 +385,9 @@ kbd {
   padding: 14px;
   width: auto;
   height: auto;
-  display: flex;             
-  flex-direction: column;    
-  align-items: flex-start;   
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
   justify-content: flex-start;
   flex-shrink: 0;
   box-sizing: border-box;
@@ -469,7 +422,7 @@ kbd {
   border: none;
   color: #4b5563;
   border-radius: 50%;
-  
+
   /* Centering Fixes */
   display: flex;
   align-items: center;
@@ -479,7 +432,7 @@ kbd {
   line-height: 0;       /* Removes extra font line-height spacing below baseline */
   font-size: 14px;
   text-align: center;
-  
+
   cursor: pointer;
   opacity: 0;
   transition: opacity 0.15s ease, background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
@@ -547,7 +500,8 @@ kbd {
   user-select: text;
   transition: color 0.25s ease;
   display: block;
-  margin: 0;                   /* Prevents unintended margin pushing */}
+  margin: 0; /* Prevents unintended margin pushing */
+}
 
 .tile-text-input.editing {
   pointer-events: auto;
@@ -589,10 +543,10 @@ kbd {
 .tile-media-container img,
 .tile-media-container video {
   display: block;
-  max-width: 100%;               
+  max-width: 100%;
   width: 100%;
   height: auto;
-  object-fit: contain;          
+  object-fit: contain;
   border-radius: 8px;
   pointer-events: none;
   user-select: none;
@@ -634,7 +588,7 @@ kbd {
 
 /* Line Grid */
 #viewport.pattern-lines {
-  background-image: 
+  background-image:
     linear-gradient(to right, rgba(0, 0, 0, 0.08) 1px, transparent 1px),
     linear-gradient(to bottom, rgba(0, 0, 0, 0.08) 1px, transparent 1px);
   background-size: 24px 24px;
@@ -665,7 +619,7 @@ kbd {
   pointer-events: none;
   transform: rotate(-30deg);
   transform-origin: center center;
-  background-image: 
+  background-image:
     linear-gradient(135deg, rgba(244, 245, 245, 0.82) 0%, rgba(236, 238, 239, 0.92) 50%, rgba(214, 214, 214, 0.98) 100%),
     url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22400%22%20height%3D%22400%22%20viewBox%3D%220%200%20400%20400%22%3E%3Cg%20fill%3D%22none%22%20stroke-linecap%3D%22round%22%3E%3Cpath%20d%3D%22M%200%2050%20Q%20100%20-30%20200%2050%20T%20400%2050%22%20stroke%3D%22rgba(0%2C%200%2C%200%2C%200.20)%22%20stroke-width%3D%2222%22%2F%3E%3Cpath%20d%3D%22M%200%20110%20Q%20100%2030%20200%20110%20T%20400%20110%22%20stroke%3D%22rgba(0%2C%200%2C%200%2C%200.15)%22%20stroke-width%3D%2226%22%2F%3E%3Cpath%20d%3D%22M%200%20170%20Q%20100%2090%20200%20170%20T%20400%20170%22%20stroke%3D%22rgba(0%2C%200%2C%200%2C%200.22)%22%20stroke-width%3D%2220%22%2F%3E%3Cpath%20d%3D%22M%200%20230%20Q%20100%20150%20200%20230%20T%20400%20230%22%20stroke%3D%22rgba(0%2C%200%2C%200%2C%200.18)%22%20stroke-width%3D%2224%22%2F%3E%3Cpath%20d%3D%22M%200%20290%20Q%20100%20210%20200%20290%20T%20400%20290%22%20stroke%3D%22rgba(0%2C%200%2C%200%2C%200.20)%22%20stroke-width%3D%2220%22%2F%3E%3Cpath%20d%3D%22M%200%20350%20Q%20100%20270%20200%20350%20T%20400%20350%22%20stroke%3D%22rgba(0%2C%200%2C%200%2C%200.14)%22%20stroke-width%3D%2228%22%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E");
   background-repeat: repeat;
@@ -680,11 +634,6 @@ kbd {
   100% {
     background-position: 0 0, 400px 400px;
   }
-}
-
-@keyframes waveShift {
-  0% { background-position: 0 0, 0 0; }
-  100% { background-position: 0 0, 400px 400px; }
 }
 
 /* Solid Plain */
@@ -761,7 +710,7 @@ body.dark-mode #viewport.pattern-dots {
 }
 
 body.dark-mode #viewport.pattern-lines {
-  background-image: 
+  background-image:
     linear-gradient(to right, rgba(255, 255, 255, 0.07) 1px, transparent 1px),
     linear-gradient(to bottom, rgba(255, 255, 255, 0.07) 1px, transparent 1px);
 }
@@ -785,7 +734,7 @@ body.dark-mode #viewport.pattern-waves::before {
   pointer-events: none;
   transform: rotate(-30deg);
   transform-origin: center center;
-  background-image: 
+  background-image:
     linear-gradient(135deg, rgba(24, 24, 24, 0.82) 0%, rgba(8, 8, 8, 0.92) 50%, rgba(24, 24, 24, 0.98) 100%),
     url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22400%22%20height%3D%22400%22%20viewBox%3D%220%200%20400%20400%22%3E%3Cg%20fill%3D%22none%22%20stroke-linecap%3D%22round%22%3E%3Cpath%20d%3D%22M%200%2050%20Q%20100%20-30%20200%2050%20T%20400%2050%22%20stroke%3D%22rgba(255%2C%20255%2C%20255%2C%200.12)%22%20stroke-width%3D%2222%22%2F%3E%3Cpath%20d%3D%22M%200%20110%20Q%20100%2030%20200%20110%20T%20400%20110%22%20stroke%3D%22rgba(255%2C%20255%2C%20255%2C%200.08)%22%20stroke-width%3D%2226%22%2F%3E%3Cpath%20d%3D%22M%200%20170%20Q%20100%2090%20200%20170%20T%20400%20170%22%20stroke%3D%22rgba(255%2C%20255%2C%20255%2C%200.15)%22%20stroke-width%3D%2220%22%2F%3E%3Cpath%20d%3D%22M%200%20230%20Q%20100%20150%20200%20230%20T%20400%20230%22%20stroke%3D%22rgba(255%2C%20255%2C%20255%2C%200.10)%22%20stroke-width%3D%2224%22%2F%3E%3Cpath%20d%3D%22M%200%20290%20Q%20100%20210%20200%20290%20T%20400%20290%22%20stroke%3D%22rgba(255%2C%20255%2C%20255%2C%200.12)%22%20stroke-width%3D%2220%22%2F%3E%3Cpath%20d%3D%22M%200%20350%20Q%20100%20270%20200%20350%20T%20400%20350%22%20stroke%3D%22rgba(255%2C%20255%2C%20255%2C%200.08)%22%20stroke-width%3D%2228%22%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E");
   background-repeat: repeat;
@@ -891,7 +840,7 @@ body.dark-mode #selection-box {
   cursor: pointer;
   z-index: 2;
   padding-left: 2px;
-  
+
   opacity: 1; /* Always visible when paused */
   transition: opacity 0.2s ease, transform 0.2s ease;
 }
