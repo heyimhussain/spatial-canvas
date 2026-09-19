@@ -577,7 +577,7 @@ function loadSpace() {
           }
 
           tile.appendChild(container);
-          attachTileResizeHandle(tile);
+          attachTileResizeHandle(tile, tileData.type);
         }
       });
     }
