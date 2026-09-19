@@ -397,7 +397,7 @@ function saveSpace() {
     const y = parseFloat(tileEl.style.top) || 0;
     const zIndex = parseInt(tileEl.style.zIndex, 10) || 1;
 
-    // 1. Text Tile Check
+    // In saveSpace():
     const textarea = tileEl.querySelector('textarea');
     if (textarea) {
       tilesData.push({
@@ -407,6 +407,7 @@ function saveSpace() {
         y,
         zIndex,
         width: parseFloat(tileEl.style.width) || null,
+        height: parseFloat(tileEl.style.height) || null,
         text: textarea.value
       });
       return;
@@ -522,18 +523,16 @@ function loadSpace() {
         }
 
         // Reconstruct Text Tile
+        // In loadSpace(), under text tile reconstruction:
         if (tileData.type === 'text') {
-          if (tileData.width) {
-            tile.style.width = `${tileData.width}px`;
-          }
+          if (tileData.width) tile.style.width = `${tileData.width}px`;
+          if (tileData.height) tile.style.height = `${tileData.height}px`;
 
           const textarea = document.createElement('textarea');
           textarea.className = 'tile-text-input';
           textarea.value = tileData.text || '';
 
           textarea.addEventListener('input', () => {
-            textarea.style.height = 'auto';
-            textarea.style.height = `${textarea.scrollHeight}px`;
             saveSpace();
           });
 
@@ -543,12 +542,7 @@ function loadSpace() {
           });
 
           tile.appendChild(textarea);
-          attachTileResizeHandle(tile);
-
-          requestAnimationFrame(() => {
-            textarea.style.height = 'auto';
-            textarea.style.height = `${textarea.scrollHeight}px`;
-          });
+          attachTileResizeHandle(tile, 'text');
         }
         
         // Reconstruct Media Tiles
@@ -724,7 +718,7 @@ viewport.addEventListener('dblclick', (e) => {
   });
 
   tile.appendChild(textarea);
-  attachTileResizeHandle(tile);
+  attachTileResizeHandle(tile, 'text');
   setTimeout(() => textarea.focus(), 50);
 });
 
@@ -803,7 +797,10 @@ function handleFileDrop(file, pos) {
     container.appendChild(nameTag);
 
     tile.appendChild(container);
-    attachTileResizeHandle(tile);
+    const type =  file.type.startsWith('image/') ? 'image' : 
+                  file.type.startsWith('video/') ? 'video' : 
+                  file.type.startsWith('audio/') ? 'audio' : 'text';
+    attachTileResizeHandle(tile, type);
 
     saveSpace();
   };
@@ -860,7 +857,7 @@ async function startAudioRecording() {
 
       container.appendChild(label);
       tile.appendChild(container);
-      attachTileResizeHandle(tile);
+      attachTileResizeHandle(tile, 'audio');
       saveSpace();
     };
 
@@ -933,42 +930,130 @@ window.addEventListener('DOMContentLoaded', () => {
   initMicrophone();
   loadSpace();
   saveSpace();
-});
+});s
 
-function attachTileResizeHandle(tile) {
-  const handle = document.createElement('div');
-  handle.className = 'tile-resize-handle';
-  tile.appendChild(handle);
+function attachTileResizeHandle(tile, type) {
+  // -------------------------------------------------------------
+  // 1. Audio Tiles: Horizontal-Only Scaling (Right Edge Handle)
+  // -------------------------------------------------------------
+  if (type === 'audio') {
+    const handle = document.createElement('div');
+    handle.className = 'tile-resize-handle';
+    tile.appendChild(handle);
 
-  handle.addEventListener('mousedown', (e) => {
-    e.stopPropagation();
-    e.preventDefault();
+    handle.addEventListener('mousedown', (e) => {
+      e.stopPropagation();
+      e.preventDefault();
 
-    let startX = e.clientX;
-    let startWidth = tile.offsetWidth;
+      const startX = e.clientX;
+      const startWidth = tile.offsetWidth;
+      const canvas = tile.querySelector('canvas');
 
-    const canvas = tile.querySelector('canvas');
+      const onMouseMove = (moveEvent) => {
+        const dx = (moveEvent.clientX - startX) / scale;
+        const newWidth = Math.max(200, startWidth + dx);
 
-    const onMouseMove = (moveEvent) => {
-      const dx = (moveEvent.clientX - startX) / scale;
-      const newWidth = Math.max(180, startWidth + dx);
+        tile.style.width = `${newWidth}px`;
+        tile.style.height = 'auto';
+        tile.dataset.width = newWidth;
 
-      tile.style.width = `${newWidth}px`;
-      tile.style.height = 'auto';
-      tile.dataset.width = newWidth;
+        if (canvas) {
+          canvas.width = canvas.getBoundingClientRect().width;
+        }
+      };
 
-      if (canvas) {
-        canvas.width = canvas.getBoundingClientRect().width;
-      }
-    };
+      const onMouseUp = () => {
+        window.removeEventListener('mousemove', onMouseMove);
+        window.removeEventListener('mouseup', onMouseUp);
+        saveSpace();
+      };
 
-    const onMouseUp = () => {
-      window.removeEventListener('mousemove', onMouseMove);
-      window.removeEventListener('mouseup', onMouseUp);
-      saveSpace();
-    };
+      window.addEventListener('mousemove', onMouseMove);
+      window.addEventListener('mouseup', onMouseUp);
+    });
+    return;
+  }
 
-    window.addEventListener('mousemove', onMouseMove);
-    window.addEventListener('mouseup', onMouseUp);
-  });
+  // -------------------------------------------------------------
+  // 2. Text Tiles: 2D Corner Scaling + Dynamic Minimum Size
+  // -------------------------------------------------------------
+  if (type === 'text') {
+    const cornerHandle = document.createElement('div');
+    cornerHandle.className = 'tile-resize-handle-corner';
+    tile.appendChild(cornerHandle);
+
+    cornerHandle.addEventListener('mousedown', (e) => {
+      e.stopPropagation();
+      e.preventDefault();
+
+      const textarea = tile.querySelector('textarea');
+      const startX = e.clientX;
+      const startY = e.clientY;
+      const startWidth = tile.offsetWidth;
+      const startHeight = tile.offsetHeight;
+
+      // Measure minimum required height dynamically based on current content & width
+      textarea.style.height = 'auto';
+      const minDynamicHeight = Math.max(60, textarea.scrollHeight + 28);
+      textarea.style.height = '100%';
+
+      const onMouseMove = (moveEvent) => {
+        const dx = (moveEvent.clientX - startX) / scale;
+        const dy = (moveEvent.clientY - startY) / scale;
+
+        const newWidth = Math.max(140, startWidth + dx);
+        const newHeight = Math.max(minDynamicHeight, startHeight + dy);
+
+        tile.style.width = `${newWidth}px`;
+        tile.style.height = `${newHeight}px`;
+      };
+
+      const onMouseUp = () => {
+        window.removeEventListener('mousemove', onMouseMove);
+        window.removeEventListener('mouseup', onMouseUp);
+        saveSpace();
+      };
+
+      window.addEventListener('mousemove', onMouseMove);
+      window.addEventListener('mouseup', onMouseUp);
+    });
+    return;
+  }
+
+  // -------------------------------------------------------------
+  // 3. Image & Video Tiles: Aspect Ratio Scaling (Corner Handle)
+  // -------------------------------------------------------------
+  if (type === 'image' || type === 'video') {
+    const cornerHandle = document.createElement('div');
+    cornerHandle.className = 'tile-resize-handle-corner';
+    tile.appendChild(cornerHandle);
+
+    cornerHandle.addEventListener('mousedown', (e) => {
+      e.stopPropagation();
+      e.preventDefault();
+
+      const startX = e.clientX;
+      const startWidth = tile.offsetWidth;
+      const aspectRatio = tile.offsetWidth / tile.offsetHeight;
+
+      const onMouseMove = (moveEvent) => {
+        const dx = (moveEvent.clientX - startX) / scale;
+        const newWidth = Math.max(120, startWidth + dx);
+        const newHeight = newWidth / aspectRatio;
+
+        tile.style.width = `${newWidth}px`;
+        tile.style.height = `${newHeight}px`;
+        tile.dataset.width = newWidth;
+      };
+
+      const onMouseUp = () => {
+        window.removeEventListener('mousemove', onMouseMove);
+        window.removeEventListener('mouseup', onMouseUp);
+        saveSpace();
+      };
+
+      window.addEventListener('mousemove', onMouseMove);
+      window.addEventListener('mouseup', onMouseUp);
+    });
+  }
 }

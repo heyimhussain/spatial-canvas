@@ -4,3 +4,9 @@ Spatial Canvas is a lightweight, interactive web application that lets you organ
 
 THINGS TO ADD:
 - Recording Toggle for Long VoiceNotes
+- Make Text Resizable in both directions
+- Add a custom rightclick menu overwriting the current one
+- Add a copy/paste/cut/duplicate function
+- Add a search function overwriting the ctrl-f function
+- Add ctrl+click to select multiple tiles at once
+- Download Audio
